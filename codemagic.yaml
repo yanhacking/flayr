@@ -1,0 +1,68 @@
+workflows:
+  android-release:
+    name: Android Release
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      android_signing:
+        - flayr_keystore
+      vars:
+        PACKAGE_NAME: "com.flowachat.yan"
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build Android release APK
+        script: |
+          flutter build apk --release \
+            --build-name=1.25 \
+            --build-number=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks=alpha) + 1))
+      - name: Build Android App Bundle (AAB)
+        script: |
+          flutter build appbundle --release \
+            --build-name=1.25
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
+      - build/app/outputs/bundle/release/app-release.aab
+    publishing:
+      email:
+        recipients:
+          - yanroovenandrewoccine@gmail.com
+
+  ios-release:
+    name: iOS Release
+    max_build_duration: 90
+    environment:
+      flutter: stable
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.flowachat.yan
+      vars:
+        BUNDLE_ID: "com.flowachat.yan"
+        XCODE_WORKSPACE: "ios/Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
+    scripts:
+      - name: Disable Swift Package Manager (plugins not compatible)
+        script: flutter config --no-enable-swift-package-manager
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios && pod install --repo-update
+      - name: Build iOS release
+        script: |
+          flutter build ios --release --no-codesign
+      - name: Archive and export IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - yanroovenandrewoccine@gmail.com
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

@@ -15,6 +15,9 @@ import 'package:untitled/common/widgets/menu.dart';
 import 'package:untitled/common/widgets/my_cached_image.dart';
 import 'package:untitled/localization/languages.dart';
 import 'package:untitled/models/posts_model.dart';
+import 'package:untitled/screens/add_post_screen/add_post_controller.dart';
+import 'package:untitled/screens/add_post_screen/add_post_screen.dart';
+import 'package:untitled/screens/add_post_screen/record_audio/record_audio_screen.dart';
 import 'package:untitled/screens/post/comment/comment_screen.dart';
 import 'package:untitled/screens/post/post_controller.dart';
 import 'package:untitled/screens/profile_screen/profile_screen.dart';
@@ -97,16 +100,11 @@ class PostCard extends StatelessWidget {
   }
 
   Widget _contentView(PostController controller) {
-    switch (controller.post.type) {
-      case PostType.image:
-        return _PostImageView(controller: controller);
-      case PostType.video:
-        return _PostVideoView(controller: controller);
-      case PostType.audio:
-        return _PostAudioView(controller: controller);
-      default:
-        return const SizedBox.shrink();
-    }
+    final t = controller.post.type;
+    if (t == PostType.image) return _PostImageView(controller: controller);
+    if (t == PostType.video) return _PostVideoView(controller: controller);
+    if (t == PostType.audio) return _PostAudioView(controller: controller);
+    return const SizedBox.shrink();
   }
 }
 

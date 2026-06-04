@@ -33,11 +33,7 @@ workflows:
     max_build_duration: 90
     environment:
       flutter: stable
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.flowachat.yan
       vars:
-        BUNDLE_ID: "com.flowachat.yan"
         XCODE_WORKSPACE: "ios/Runner.xcworkspace"
         XCODE_SCHEME: "Runner"
     scripts:
@@ -46,18 +42,30 @@ workflows:
       - name: Get Flutter packages
         script: flutter pub get
       - name: Install CocoaPods dependencies
-        script: |
-          cd ios && pod install --repo-update
-      - name: Build iOS release
+        script: cd ios && pod install --repo-update
+      - name: Build iOS (unsigned — for sideloading)
         script: |
           flutter build ios --release --no-codesign
-      - name: Archive and export IPA
+          cd ios && xcodebuild \
+            -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath build/Runner.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE=""
+      - name: Package unsigned IPA
         script: |
-          xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+          mkdir -p build/ios/unsigned
+          cd ios/build/Runner.xcarchive/Products/Applications
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r $CM_BUILD_DIR/build/ios/unsigned/flayr-unsigned.ipa Payload
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/unsigned/flayr-unsigned.ipa
       - /tmp/xcodebuild_logs/*.log
     publishing:
       email:

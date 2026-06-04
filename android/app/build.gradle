@@ -33,7 +33,7 @@ if (flutterVersionName == null) {
 //apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 android {
     compileSdk 36
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
     namespace 'com.flowachat.yan'
 
     compileOptions {

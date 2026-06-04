@@ -64,7 +64,8 @@ class LoginController extends BaseController {
       registerUser(fullName: googleSignInAccount.displayName, identity: googleSignInAccount.email, loginType: LoginType.google);
     } catch (exception) {
       stopLoading();
-      Loggers.error("Firebase error: ${exception.toString()}");
+      Loggers.error("Google Sign-In error: ${exception.toString()}");
+      showSnackBar(exception.toString(), type: SnackBarType.error);
     }
   }
 

@@ -135,22 +135,23 @@ class _SignInWithEmailScreenState extends State<SignInWithEmailScreen> with Sing
               onTap: () async {
                 baseController.startLoading();
                 try {
-                  final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                  await FirebaseAuth.instance.signInWithEmailAndPassword(
                     email: emailController.text,
                     password: passwordController.text,
                   );
-                  if (credential.user?.emailVerified == true) {
-                    Get.back();
-                    widget.onSubmit(fullNameController.text == "" ? null : fullNameController.text, emailController.text);
-                  } else {
-                    baseController.stopLoading();
-                    baseController.showSnackBar(LKeys.pleaseVerifyToSignIn.tr, type: SnackBarType.error);
-                  }
+                  // Accept both verified and unverified accounts
+                  Get.back();
+                  widget.onSubmit(
+                    fullNameController.text.isEmpty ? null : fullNameController.text,
+                    emailController.text,
+                  );
                 } on FirebaseAuthException catch (e) {
                   baseController.stopLoading();
-                  baseController.showSnackBar(e.message ?? '', type: SnackBarType.error);
+                  final msg = _friendlyFirebaseError(e.code);
+                  baseController.showSnackBar(msg, type: SnackBarType.error);
                 } catch (e) {
-                  print(e);
+                  baseController.stopLoading();
+                  baseController.showSnackBar(e.toString(), type: SnackBarType.error);
                 }
               }),
           Row(
@@ -318,6 +319,30 @@ class _SignInWithEmailScreenState extends State<SignInWithEmailScreen> with Sing
     setState(() {
       type = EmailSignInType.forgot;
     });
+  }
+
+  String _friendlyFirebaseError(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'Aucun compte trouvé avec cet email.';
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'Email ou mot de passe incorrect.';
+      case 'invalid-email':
+        return 'Adresse email invalide.';
+      case 'user-disabled':
+        return 'Ce compte a été désactivé.';
+      case 'too-many-requests':
+        return 'Trop de tentatives. Réessaie dans quelques minutes.';
+      case 'network-request-failed':
+        return 'Erreur réseau. Vérifie ta connexion.';
+      case 'email-already-in-use':
+        return 'Cet email est déjà utilisé.';
+      case 'weak-password':
+        return 'Mot de passe trop faible (6 caractères minimum).';
+      default:
+        return 'Erreur : $code';
+    }
   }
 }
 

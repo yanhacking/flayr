@@ -1,0 +1,110 @@
+import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:untitled/common/api_service/user_service.dart';
+import 'package:untitled/common/controller/base_controller.dart';
+import 'package:untitled/common/managers/session_manager.dart';
+import 'package:untitled/common/managers/subscription_manager.dart';
+import 'package:untitled/localization/languages.dart';
+import 'package:untitled/models/setting_model.dart';
+import 'package:untitled/screens/profile_picture_screen/profile_picture_controller.dart';
+import 'package:untitled/screens/subscription/flayr_premium_screen.dart';
+
+class ProfileVerificationController extends ProfilePictureController {
+  XFile? selectedDocument;
+  TextEditingController fullNameController = TextEditingController();
+  SettingCommon? selectedType;
+  List<SettingCommon> types = SessionManager.shared.getSettings()?.documentType ?? [];
+  List<VerificationMethodModel> methods = [
+    VerificationMethodModel(LKeys.verificationSubscriptionTitle, LKeys.verificationSubscriptionDesc, VerificationMethod.subscription),
+    VerificationMethodModel(LKeys.verificationDocumentTitle, LKeys.verificationDocumentDesc, VerificationMethod.document),
+  ];
+
+  late VerificationMethodModel selectedMethod;
+
+  ProfileVerificationController() {
+    selectedMethod = methods.first;
+  }
+
+  @override
+  void onReady() {
+    selectedType = types.isNotEmpty ? types.first : null;
+    if (SessionManager.shared.getSettings()?.isInAppPurchaseEnabled == 0) {
+      selectedMethod = methods.last;
+    }
+    update();
+    super.onReady();
+  }
+
+  void selectDocument() async {
+    try {
+      selectedDocument = await picker.pickImage(source: ImageSource.gallery);
+      update();
+    } catch (e) {
+      showSnackBar("Invalid Document");
+    }
+  }
+
+  void onChangeMethod(VerificationMethodModel method) {
+    selectedMethod = method;
+    update();
+  }
+
+  void onChangeType(SettingCommon? value) {
+    selectedType = value;
+    update();
+  }
+
+  void restorePurchase() async {
+    startLoading();
+    final active = await SubscriptionManager.shared.restorePurchase();
+    if (active == true) {
+      UserService.shared.editProfile(
+        isVerified: 3,
+        completion: (_) {
+          stopLoading();
+          Get.back();
+        },
+      );
+    } else {
+      stopLoading();
+    }
+  }
+
+  void submitRequest() async {
+    if (selectedMethod.method == VerificationMethod.document) {
+      if (fullNameController.text.isEmpty) {
+        showSnackBar(LKeys.pleaseEnterFullName.tr, type: SnackBarType.error);
+      } else if (selectedDocument == null) {
+        showSnackBar(LKeys.pleaseSelectDocument.tr, type: SnackBarType.error);
+      } else if (imagePath.isEmpty) {
+        showSnackBar(LKeys.pleaseEnterYourSelfie.tr, type: SnackBarType.error);
+      } else {
+        startLoading();
+        UserService.shared.profileVerification(
+          fullNameController.text,
+          selectedType?.title ?? '',
+          selectedDocument,
+          XFile(imagePath),
+        );
+      }
+    } else {
+      // Open FLAYR Premium screen — Stripe checkout handled there
+      final result = await Get.to<bool>(() => const FlayrPremiumScreen());
+      if (result == true) Get.back();
+    }
+  }
+}
+
+class VerificationMethodModel {
+  String title;
+  String desc;
+  VerificationMethod method;
+
+  VerificationMethodModel(this.title, this.desc, this.method);
+}
+
+enum VerificationMethod {
+  document,
+  subscription;
+}

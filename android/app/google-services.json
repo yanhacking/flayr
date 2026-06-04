@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "394884653507",
+    "project_id": "fanparyaj",
+    "storage_bucket": "fanparyaj.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:394884653507:android:352a75240ced9ed0a59d76",
+        "android_client_info": {
+          "package_name": "com.flowachat.yan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "394884653507-qnrml4m5t9rgvkjrp7usbhg1jrjed1ef.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.flowachat.yan",
+            "certificate_hash": "968da5dc1b08eea2471eb488de8c01bdfed42644"
+          }
+        },
+        {
+          "client_id": "394884653507-9b62a2ittme1ch9l8vibkmaogmlcf3qm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6k2BJ6k_VbHsouu28kaohIUCKsuO26lI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "394884653507-9b62a2ittme1ch9l8vibkmaogmlcf3qm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "394884653507-fg6tagep0gc1nnv55i67067eesqkdvk3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.flowachat.yan"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

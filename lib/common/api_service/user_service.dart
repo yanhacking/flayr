@@ -376,8 +376,8 @@ class UserService {
         var user = registration.data;
         if (user != null) {
           SessionManager.shared.setUser(user);
-          completion(registration);
         }
+        completion(registration);
       },
     );
   }

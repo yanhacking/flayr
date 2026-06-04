@@ -87,27 +87,31 @@ class LoginController extends BaseController {
           deviceToken: token,
           loginType: loginType,
           completion: (p0) {
+            stopLoading();
+            var user = p0.data;
+            if (user == null) {
+              showSnackBar('Login failed. Please try again.', type: SnackBarType.error);
+              return;
+            }
             SessionManager.shared.setLogin(true);
 
             Widget w = InterestScreen();
-            var user = p0.data;
-            if (user?.isPushNotifications == 1) {
+            if (user.isPushNotifications == 1) {
               FirebaseNotificationManager.shared.subscribeToTopic(notificationTopic);
               NotificationService.shared.subscribeToAllMyRoom();
             }
-            if (user?.isBlock == 1) {
+            if (user.isBlock == 1) {
               w = const BlockedByAdminScreen();
-            } else if (user?.interestIds == null) {
+            } else if (user.interestIds == null) {
               w = InterestScreen();
-            } else if (user?.username == null) {
+            } else if (user.username == null || user.username!.isEmpty) {
               w = const UserNameScreen();
-            } else if (user?.profile == null) {
+            } else if (user.profile == null) {
               w = const ProfilePictureScreen();
             } else {
               w = TabBarScreen();
             }
             Get.offAll(() => w);
-            stopLoading();
           });
     });
   }
